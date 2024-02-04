@@ -1,23 +1,25 @@
-import logo from './logo.svg';
+import React from 'react';
+import logo from './logo.png';
 import './App.css';
+import WelcomeScreen from './WelcomeScreen'; 
+import RegisterScreen from './RegisterScreen';
+import LoginScreen from './LoginScreen';
+import UserDashboardScreen from './UserDashboardScreen';
+import {  BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Supprimez BrowserRouter ici
+import CountryDetailsScreen from './CountryDetailsScreen';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <img src={logo} className="App-logo" alt="logo" />
+      <Routes>
+        <Route path="/" element={<WelcomeScreen />} />
+        <Route path="/register" element={<RegisterScreen />} />
+        <Route path="*" element={<h1>Page not found</h1>} />
+        <Route path="/login" element={<LoginScreen />} />
+        <Route path="/user-dashboard" element={<UserDashboardScreen />} />
+        <Route path="/countrydetails/:countryName" element={<CountryDetailsScreen />} />
+      </Routes>
     </div>
   );
 }
