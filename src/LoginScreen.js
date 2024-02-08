@@ -6,8 +6,14 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  const ip = "10.192.5.233";
-  const apiURL = `http://${ip}:8888/api`;
+  const apiURL = process.env.REACT_APP_API_URL;
+  const storeUserId = (userId) => {
+    try {
+      localStorage.setItem('userId', userId.toString());
+    } catch (error) {
+      console.error('Erreur lors du stockage de l\'ID de l\'utilisateur:', error);
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -24,24 +30,25 @@ const LoginScreen = () => {
       const data = await response.json();
 
       if (response.status === 200) {
-        // Vérifier si l'utilisateur est un administrateur
-        if (data.is_admin) {
-          // Naviguer vers le tableau de bord administrateur
-          navigate('/admin-dashboard');
+        if (data.is_admin && data.email_verified_at) {
+          navigate('/admin-dashboard'); // Navigation vers le tableau de bord administrateur
         } else {
-          // Naviguer vers le tableau de bord utilisateur standard
-          navigate('/user-dashboard');
+          if (data.email_verified_at) {
+            storeUserId(data.id);
+            navigate('/user-dashboard'); // Navigation vers le tableau de bord utilisateur
+          } else {
+            alert("Vous n'avez pas encore validé votre compte! Vous allez être redirigé vers la page de vérification.");
+            navigate(`/verify-mail-code`); // Navigation vers la page de vérification
+          }
         }
       } else {
-        // Si le statut n'est pas 200, on suppose qu'il y a une erreur de connexion
         setErrorMessage(data.message || 'Erreur de connexion');
       }
     } catch (error) {
-      // Cette partie attrape les erreurs de réseau ou les erreurs survenues lors de la requête
       setErrorMessage(error.message || 'Une erreur est survenue lors de la connexion');
     }
   };
-
+  
   return (
     <div style={styles.container}>
       <div style={styles.loginInfo}>

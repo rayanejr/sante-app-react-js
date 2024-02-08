@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 
+const apiURL = process.env.REACT_APP_API_URL;
+
 const CountryDetails = () => {
   const { countryName } = useParams();
+  const [userId, setUserId] = useState('');
   const [healthCareServices, setHealthCareServices] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('Sélectionnez votre pays de départ');
@@ -12,10 +15,10 @@ const CountryDetails = () => {
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [distance, setDistance] = useState(null);
   const [carbonFootprint, setCarbonFootprint] = useState(null);
+
+
   const [departureCountries, setDepartureCountries] = useState([]);
 
-  const ip = "10.192.5.233";
-  const apiURL = `http://${ip}:8888/api`;
 
   const getStoredUserId = async () => {
     try {
@@ -26,8 +29,9 @@ const CountryDetails = () => {
       return null;
     }
   };
-
-  const getActesSante = useCallback(async () => {
+  
+  
+  const getActesSante = async () => {
     try {
       const response = await fetch(`${apiURL}/actesante/${countryName}`);
       if (!response.ok) {
@@ -43,11 +47,14 @@ const CountryDetails = () => {
         prix: `${item.prix}€`
       }));
       setHealthCareServices(formattedData);
+  
+      // Attendre que setPaysId soit terminé avant d'appeler getRecommandations
       await getRecommandations(paysIdValue);
     } catch (error) {
       console.error("Erreur lors de la récupération des actes de santé:", error);
     }
-  }, [countryName, apiURL]);
+  };
+  
 
   const getRecommandations = async (paysId) => {
     try {
@@ -66,64 +73,48 @@ const CountryDetails = () => {
     }
   };
 
-  const handleDeleteRecommendation = async (recommendationId) => {
-    try {
-      const response = await fetch(`${apiURL}/recommandations/${recommendationId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Erreur réseau lors de la suppression de la recommandation');
-      }
-      
-      setRecommendations(prevRecommendations =>
-        prevRecommendations.filter(recommendation => recommendation.id !== recommendationId)
-      );
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la recommandation:", error);
-    }
-  };    
-
-  const getCountriesByName = useCallback(async () => {
+  const getCountriesByName = async () => {
     try {
       const response = await fetch(`${apiURL}/pays/names`);
       if (!response.ok) {
         throw new Error('Erreur réseau lors de la récupération des noms de pays');
       }
+  
       const data = await response.json();
+
+      // Mettez à jour l'état avec la liste des noms de pays
       setDepartureCountries(data);  
     } catch (error) {
       console.error("Erreur lors de la récupération des noms de pays:", error);
     }
-  }, [apiURL]);
+  };
 
-  const AddRecommendation = async () => {
+  const getCountryByEnglishName = async (countryName) => {
     try {
-      const response = await fetch(`${apiURL}/recommandations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contenu: newRecommendation,
-          pays_id: paysId, 
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.recommandation) {
-          setNewRecommendation('');
-          getRecommandations(paysId); // Refresh recommendations
-        } else {
-          console.error('Erreur lors de la création de la recommandation:', data.message);
-        }
+      const response = await fetch(`${apiURL}/pays/${countryName}`);
+      if (!response.ok) {
+        throw new Error('Erreur réseau lors de la récupération des noms de pays');
+      }
+  
+      const data = await response.json();
+  
+      if (data != null) {
+        // Vous pouvez récupérer l'ID du pays depuis la réponse de l'API
+        setSelectedCountryId(data.id);
+        return data.nom_anglais ;
       } else {
-        console.error('Erreur lors de la création de la recommandation:', response.statusText);
+        return null;
       }
     } catch (error) {
-      console.error('Erreur lors de la création de la recommandation:', error);
+      console.error("Erreur lors de la récupération des noms de pays:", error);
+      return null;
     }
   };
+  
+  useEffect(() => {
+    getActesSante();
+    getCountriesByName();
+  }, []);
 
   const addTrajet = async (paysId, selectedCountryId, carbonFootprint) => {
     try {
@@ -148,410 +139,246 @@ const CountryDetails = () => {
         alert('Déplacement enregistré avec succès!');
       } else {
         console.error('Erreur lors de la création du déplacement:', response.status);
+        return null;
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout du trajet:', error);
-    }
-  };
-
-  const getCountryByEnglishName = async (countryName) => {
-    try {
-      const response = await fetch(`${apiURL}/pays/${countryName}`);
-      if (!response.ok) {
-        throw new Error('Erreur réseau lors de la récupération des noms de pays');
-      }
-      const data = await response.json();
-      if (data != null) {
-        setSelectedCountryId(data.id);
-        return data.nom_anglais;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération des noms de pays:", error);
       return null;
     }
-  };
-  
-  const handleEstimateCarbonFootprint = async (departureCountry, selectedCountry) => {
-     const getCapital = async (countryNameInEnglish) => {
-      const formattedCountryName = formatCountryName(countryName); 
-      const apiUrl = `https://restcountries.com/v3.1/name/${encodeURIComponent(formattedCountryName)}`;
-  
+  };  
+    const AddRecommendation = async () => {
       try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error(`Capitale non trouvée pour le pays : ${formattedCountryName}`);
-        }
-        const data = await response.json();
-        return data[0].capital[0];
-      } catch (error) {
-        console.error('Erreur lors de la récupération de la capitale:', error);
-        return null;
-      }
-    };
-    const formatCountryName = (countryName) => {
-      const countryNameMap = {
-        "Tunisie": "Tunisia",
-        "Afghanistan": "Afghanistan",
-        "Afrique du Sud": "South Africa",
-        "Albanie": "Albania",
-        "Algérie": "Algeria",
-        "Allemagne": "Germany",
-        "Andorre": "Andorra",
-        "Angola": "Angola",
-        "Antigua-et-Barbuda": "Antigua and Barbuda",
-        "Arabie Saoudite": "Saudi Arabia",
-        "Argentine": "Argentina",
-        "Arménie": "Armenia",
-        "Australie": "Australia",
-        "Autriche": "Austria",
-        "Azerbaïdjan": "Azerbaijan",
-        "Bahamas": "Bahamas",
-        "Bahreïn": "Bahrain",
-        "Bangladesh": "Bangladesh",
-        "Barbade": "Barbados",
-        "Belgique": "Belgium",
-        "Belize": "Belize",
-        "Bénin": "Benin",
-        "Bhoutan": "Bhutan",
-        "Biélorussie": "Belarus",
-        "Birmanie": "Myanmar",
-        "Bolivie": "Bolivia",
-        "Bosnie-Herzégovine": "Bosnia and Herzegovina",
-        "Botswana": "Botswana",
-        "Brésil": "Brazil",
-        "Brunei": "Brunei",
-        "Bulgarie": "Bulgaria",
-        "Burkina Faso": "Burkina Faso",
-        "Burundi": "Burundi",
-        "Cambodge": "Cambodia",
-        "Cameroun": "Cameroon",
-        "Canada": "Canada",
-        "Cap-Vert": "Cape Verde",
-        "Chili": "Chile",
-        "Chine": "China",
-        "Chypre": "Cyprus",
-        "Colombie": "Colombia",
-        "Comores": "Comoros",
-        "Congo": "Congo",
-        "Corée du Nord": "North Korea",
-        "Corée du Sud": "South Korea",
-        "Costa Rica": "Costa Rica",
-        "Côte d'Ivoire": "Ivory Coast",
-        "Croatie": "Croatia",
-        "Cuba": "Cuba",
-        "Danemark": "Denmark",
-        "Djibouti": "Djibouti",
-        "Dominique": "Dominica",
-        "Égypte": "Egypt",
-        "Émirats Arabes Unis": "United Arab Emirates",
-        "Équateur": "Ecuador",
-        "Érythrée": "Eritrea",
-        "Espagne": "Spain",
-        "Estonie": "Estonia",
-        "Eswatini": "Eswatini",
-        "États-Unis d'Amérique": "United States of America",
-        "Éthiopie": "Ethiopia",
-        "Fidji": "Fiji",
-        "Finlande": "Finland",
-        "France": "France",
-        "Gabon": "Gabon",
-        "Gambie": "Gambia",
-        "Géorgie": "Georgia",
-        "Ghana": "Ghana",
-        "Grèce": "Greece",
-        "Grenade": "Grenada",
-        "Guatemala": "Guatemala",
-        "Guinée": "Guinea",
-        "Guinée-Bissau": "Guinea-Bissau",
-        "Guinée équatoriale": "Equatorial Guinea",
-        "Guyana": "Guyana",
-        "Haïti": "Haiti",
-        "Honduras": "Honduras",
-        "Hongrie": "Hungary",
-        "Îles Marshall": "Marshall Islands",
-        "Îles Salomon": "Solomon Islands",
-        "Inde": "India",
-        "Indonésie": "Indonesia",
-        "Irak": "Iraq",
-        "Iran": "Iran",
-        "Irlande": "Ireland",
-        "Islande": "Iceland",
-        "Palestine": "Palestine",
-        "Italie": "Italy",
-        "Jamaïque": "Jamaica",
-        "Japon": "Japan",
-        "Jordanie": "Jordan",
-        "Kazakhstan": "Kazakhstan",
-        "Kenya": "Kenya",
-        "Kirghizistan": "Kyrgyzstan",
-        "Kiribati": "Kiribati",
-        "Koweït": "Kuwait",
-        "Laos": "Laos",
-        "Lesotho": "Lesotho",
-        "Lettonie": "Latvia",
-        "Liban": "Lebanon",
-        "Libéria": "Liberia",
-        "Libye": "Libya",
-        "Liechtenstein": "Liechtenstein",
-        "Lituanie": "Lithuania",
-        "Luxembourg": "Luxembourg",
-        "Macédoine du Nord": "North Macedonia",
-        "Madagascar": "Madagascar",
-        "Malaisie": "Malaysia",
-        "Malawi": "Malawi",
-        "Maldives": "Maldives",
-        "Mali": "Mali",
-        "Malte": "Malta",
-        "Maroc": "Morocco",
-        "Maurice": "Mauritius",
-        "Mauritanie": "Mauritania",
-        "Mexique": "Mexico",
-        "États fédérés de Micronésie": "Federal States of Micronesia",
-        "Moldavie": "Moldova",
-        "Monaco": "Monaco",
-        "Mongolie": "Mongolia",
-        "Monténégro": "Montenegro",
-        "Mozambique": "Mozambique",
-        "Namibie": "Namibia",
-        "Nauru": "Nauru",
-        "Népal": "Nepal",
-        "Nicaragua": "Nicaragua",
-        "Niger": "Niger",
-        "Nigeria": "Nigeria",
-        "Norvège": "Norway",
-        "Nouvelle-Zélande": "New Zealand",
-        "Oman": "Oman",
-        "Ouganda": "Uganda",
-        "Ouzbékistan": "Uzbekistan",
-        "Pakistan": "Pakistan",
-        "Palaos": "Palau",
-        "Panama": "Panama",
-        "Papouasie-Nouvelle-Guinée": "Papua New Guinea",
-        "Paraguay": "Paraguay",
-        "Pays-Bas": "Netherlands",
-        "Pérou": "Peru",
-        "Philippines": "Philippines",
-        "Pologne": "Poland",
-        "Portugal": "Portugal",
-        "Qatar": "Qatar",
-        "République Centrafricaine": "Central African Republic",
-        "République Dominicaine": "Dominican Republic",
-        "République Démocratique du Congo": "Democratic Republic of the Congo",
-        "République du Congo": "Republic of the Congo",
-        "République Tchèque": "Czech Republic",
-        "Roumanie": "Romania",
-        "Royaume-Uni": "United Kingdom",
-        "Russie": "Russia",
-        "Rwanda": "Rwanda",
-        "Saint-Christophe-et-Niévès": "Saint Kitts and Nevis",
-        "Saint-Marin": "San Marino",
-        "Saint-Vincent-et-les-Grenadines": "Saint Vincent and the Grenadines",
-        "Sainte-Lucie": "Saint Lucia",
-        "Salomon": "Solomon Islands",
-        "Salvador": "El Salvador",
-        "Samoa": "Samoa",
-        "Sao Tomé-et-Principe": "Sao Tome and Principe",
-        "Sénégal": "Senegal",
-        "Serbie": "Serbia",
-        "Seychelles": "Seychelles",
-        "Sierra Leone": "Sierra Leone",
-        "Singapour": "Singapore",
-        "Slovaquie": "Slovakia",
-        "Slovénie": "Slovenia",
-        "Somalie": "Somalia",
-        "Soudan": "Sudan",
-        "Soudan du Sud": "South Sudan",
-        "Sri Lanka": "Sri Lanka",
-        "Suède": "Sweden",
-        "Suisse": "Switzerland",
-        "Suriname": "Suriname",
-        "Syrie": "Syria",
-        "Tadjikistan": "Tajikistan",
-        "Tanzanie": "Tanzania",
-        "Tchad": "Chad",
-        "Thaïlande": "Thailand",
-        "Timor oriental": "East Timor",
-        "Togo": "Togo",
-        "Tonga": "Tonga",
-        "Trinité-et-Tobago": "Trinidad and Tobago",
-        "Turkménistan": "Turkmenistan",
-        "Turquie": "Turkey",
-        "Tuvalu": "Tuvalu",
-        "Ukraine": "Ukraine",
-        "Uruguay": "Uruguay",
-        "Vanuatu": "Vanuatu",
-        "Vatican": "Vatican City",
-        "Venezuela": "Venezuela",
-        "Vietnam": "Vietnam",
-        "Yémen": "Yemen",
-        "Zambie": "Zambia",
-        "Zimbabwe": "Zimbabwe"
-      };
+        const response = await fetch(`${apiURL}/recommandations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contenu: newRecommendation,
+            pays_id: paysId, 
+          }),
+        });
     
-      return countryNameMap[countryName] || countryName;
-    };
+        if (response.ok) {
+          const data = await response.json();
+          if (data.recommandation) {
     
+            setNewRecommendation('');
     
-    const getLatLng = async (city) => {
-      const apiKey = 'AIzaSyBJvL7tfCzIXc5w56h0xtbiF1_Lb5roxi4'; // Remplacez par votre clé API
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${apiKey}`;
-      
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.status === 'OK') {
-          const location = data.results[0].geometry.location;
-          return { latitude: location.lat, longitude: location.lng };
+          } else {
+            console.error('Erreur lors de la création de la recommandation:', data.message);
+          }
         } else {
+          console.error('Erreur lors de la création de la recommandation:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la recommandation:', error);
+      }
+      getRecommandations(paysId);
+    };  
+    const handleDeleteRecommendation = async (recommendationId) => {
+      try {
+        const response = await fetch(`${apiURL}/recommandations/${recommendationId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Erreur réseau lors de la suppression de la recommandation');
+        }
+        
+        setRecommendations(prevRecommendations =>
+          prevRecommendations.filter(recommendation => recommendation.id !== recommendationId)
+        );
+      } catch (error) {
+        console.error("Erreur lors de la suppression de la recommandation:", error);
+      }
+    };    
+    
+    const handleEstimateCarbonFootprint = async (departureCountry, selectedCountry) => {
+      async function getCapital(countryName) {
+        const apiUrl = `https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}`;
+        
+        try {
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+      
+          if (Array.isArray(data) && data.length > 0) {
+            const capital = data[0].capital[0];
+            return capital;
+          } else {
+            return null;
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération de la capitale:', error);
           return null;
         }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des coordonnées:', error);
-        return null;
       }
-    };
-    const calculateEmissions = async () => {
-      const departureCity = await getCapital(departureCountry);
-      const selectedCity = await getCapital(selectedCountry);
-  
-      if (!departureCity || !selectedCity) {
-        console.error("Impossible de récupérer les informations sur les capitales");
-        return;
-      }
-  
-      const departureLoc = await getLatLng(departureCity);
-      const selectedLoc = await getLatLng(selectedCity);
-  
-      if (departureLoc && selectedLoc) {
-        const distance = calculateDistance(departureLoc.latitude, departureLoc.longitude, selectedLoc.latitude, selectedLoc.longitude);
-        const carbonFootprint = calculateCarbonFootprint(distance);
-  
-        setDistance(distance.toFixed(2));
-        setCarbonFootprint(carbonFootprint.toFixed(2));
-      } else {
-        console.error("Erreur de calcul des émissions de carbone lors du trajet");
-      }
-    };
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-      const earthRadius = 6371; // Rayon de la Terre en km
-      const latDelta = toRadians(lat2 - lat1);
-      const lonDelta = toRadians(lon2 - lon1);
-  
-      const a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
-                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-                Math.sin(lonDelta / 2) * Math.sin(lonDelta / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
-      return earthRadius * c;
-    };
-  
-    const toRadians = (degrees) => {
-      return degrees * (Math.PI / 180);
-    };
-  
-    const calculateCarbonFootprint = (distance) => {
-      return distance * (229.97 * 0.001); // Conversion en kgCO2e/km/personne
-    };
-  
-    const departureCity = await getCapital(departureCountry);
-    const selectedCity = await getCapital(selectedCountry);
-    const departureLoc = await getLatLng(departureCity);
-    const selectedLoc = await getLatLng(selectedCity);
-  
-    if (departureLoc && selectedLoc) {
-      const distance = calculateDistance(departureLoc.latitude, departureLoc.longitude, selectedLoc.latitude, selectedLoc.longitude);
-      const carbonFootprint = calculateCarbonFootprint(distance);
-      
-      setDistance(distance.toFixed(2));
-      setCarbonFootprint(carbonFootprint.toFixed(2));      
-    } else {
-      console.error("Erreur de calcul des émissions de carbone lors du trajet");
-    }
-    calculateEmissions();
-  };
-  const handleCountryChange = (event) => {
-    setSelectedCountry(event.target.value);
-  };
-
-  useEffect(() => {
-    if (countryName) {
-        getActesSante();
-        getCountriesByName();
-    }
-  }, [countryName, getActesSante, getCountriesByName]);
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <h2 style={styles.cardHeaderText}>Actes de Santé en {countryName}</h2>
-        </div>
-        <div style={styles.cardBody}>
-          {healthCareServices.map((service) => (
-            <div key={service.id} style={styles.serviceCard}>
-              <p style={styles.serviceText}>{service.service} - {service.prix}</p>
-            </div>
-          ))}
-
-          <h3 style={styles.subtitle}>Recommandations pour {countryName}</h3>
-          {recommendations.map((recommendation) => (
-            <div key={recommendation.id} style={styles.recommendationCard}>
-              <p>{recommendation.text}</p>
-              <button style={styles.deleteButton} onClick={() => handleDeleteRecommendation(recommendation.id)}>
-                Supprimer
-              </button>
-            </div>
-          ))}
-
-          <button style={styles.button} onClick={AddRecommendation}>
-            Ajouter Recommandation
-          </button>
-          <input
-            style={styles.input}
-            onChange={(e) => setNewRecommendation(e.target.value)}
-            value={newRecommendation}
-            placeholder="Ajouter une recommandation"
-          />
+            
+      async function getLatLng(city) {
+        const apiKey = 'AIzaSyBJvL7tfCzIXc5w56h0xtbiF1_Lb5roxi4';
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${apiKey}`;
+        
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
           
-          <h3 style={styles.subtitle}>Estimation de l'Empreinte Carbone pour le Voyage</h3>
-          <button onClick={() => setModalVisible(true)} style={styles.dropdown}>
-            {selectedCountry}
-          </button>
+          if (data.status === 'OK') {
+            const location = data.results[0].geometry.location;
+            return { latitude: location.lat, longitude: location.lng };
+          } else {
+            return null;
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération des coordonnées:', error);
+          return null;
+        }
+      }
+    
+      // Fonction pour calculer la distance entre deux points en utilisant la formule de la sphère
+      function calculateDistance(lat1, lon1, lat2, lon2) {
+        const earthRadius = 6371; // Rayon de la Terre en km
+        const latDelta = toRadians(lat2 - lat1);
+        const lonDelta = toRadians(lon2 - lon1);
+    
+        const a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
+                  Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+                  Math.sin(lonDelta / 2) * Math.sin(lonDelta / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+        return earthRadius * c;
+      }
+    
+      // Fonction pour convertir des degrés en radians
+      function toRadians(degrees) {
+        return degrees * (Math.PI / 180);
+      }
+    
+      // Fonction pour calculer l'empreinte carbone
+      function calculateCarbonFootprint(distance) {
+        return distance * (229.97 * 0.001); // Conversion en kgCO2e/km/personne
+      }
+    
+      async function calculateEmissions(departureCountry, selectedCountry) {      
+        const englishDepartureCountry = await getCountryByEnglishName(departureCountry);
+        const englishSelectedCountry = await getCountryByEnglishName(selectedCountry);
+        const selectedCity = await getCapital(englishDepartureCountry);
+        const departureCity = await getCapital(englishSelectedCountry);
+        const departureLoc = await getLatLng(departureCity);
+        const selectedLoc = await getLatLng(selectedCity);
+    
+        if (departureLoc && selectedLoc) {
+          const distance = calculateDistance(departureLoc.latitude, departureLoc.longitude, selectedLoc.latitude, selectedLoc.longitude);
+          const carbonFootprint = calculateCarbonFootprint(distance);
+          
+          setDistance(distance.toFixed(2));
+          setCarbonFootprint(carbonFootprint.toFixed(2));      
+        } else {
+          console.error("Erreur de calcul des émissions de carbone lors du trajet");
+        }
+      }
+    
+      calculateEmissions(departureCountry, selectedCountry);
+      
+    };
 
-          <label htmlFor="countrySelect" style={styles.label}>Sélectionnez votre pays de départ :</label>
-          <select id="countrySelect" style={styles.dropdown} value={selectedCountry} onChange={handleCountryChange}>
-            <option value="">Sélectionnez un pays</option>
-            {departureCountries.map((country) => (
-              <option key={country} value={country}>{country}</option>
+    useEffect(() => {
+      getActesSante();
+      getCountriesByName();
+      (async () => {
+        try {
+          setUserId = await getStoredUserId(); // Attendez que la promesse soit résolue
+          console.log(userId); // Maintenant, cela devrait correctement afficher la valeur de userId
+        } catch (error) {
+          console.error('Erreur lors de la récupération de l\'ID de l\'utilisateur:', error);
+        }
+      })();  
+    }, []);
+
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <p style={styles.cardHeaderText}>Actes de Santé en {countryName}</p>
+          </div>
+          <div style={styles.cardBody}>
+            {healthCareServices.map((service) => (
+              <div key={service.id} style={styles.serviceCard}>
+                <p style={styles.serviceText}>{service.service} - {service.prix}</p>
+              </div>
             ))}
-          </select>
-
-          {selectedCountry !== "Sélectionnez votre pays de départ" && (
-            <button style={styles.button} onClick={() => handleEstimateCarbonFootprint(countryName, selectedCountry)}>
-              Calculer l'empreinte carbone
+  
+            <p style={styles.subtitle}>Recommandations pour {countryName}</p>
+            {recommendations.map((recommendation) => (
+              <div key={recommendation.id} style={styles.recommendationCard}>
+                <p>{recommendation.text}</p>
+                {recommendation.id !== userId && (
+                  <button style={styles.deleteButton} onClick={() => handleDeleteRecommendation(recommendation.id)}>
+                    Supprimer
+                  </button>
+                )}
+              </div>
+            ))}
+  
+            <button style={styles.button} onClick={AddRecommendation}>Ajouter Recommandation</button>
+            <input
+              style={styles.input}
+              onChange={(e) => setNewRecommendation(e.target.value)}
+              value={newRecommendation}
+              placeholder="Ajouter une recommandation"
+            />
+  
+            <p style={styles.subtitle}>Estimation de l'Empreinte Carbone pour le Voyage</p>
+            <button onClick={() => setModalVisible(true)} style={styles.dropdown}>
+              {selectedCountry}
             </button>
-          )}
-          <div>
-            {distance !== null && carbonFootprint !== null && (
-              <div>
-                <p>Distance: {distance} km</p>
-                <p>Empreinte carbone: {carbonFootprint} kgCO2e/km/personne</p>
+  
+            {modalVisible && (
+              <div style={styles.modalOverlay}>
+                <div style={styles.modalContainer}>
+                  <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+                    <div style={styles.modalHeader}>
+                      <button style={styles.closeButton} onClick={() => setModalVisible(false)}>X</button>
+                    </div>
+                    <div style={styles.modalBody}>
+                      {departureCountries.map((country, index) => (
+                        <button
+                          key={index}
+                          style={styles.countryOption}
+                          onClick={() => {
+                            setModalVisible(false);
+                            setSelectedCountry(country);
+                          }}>
+                          {country}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+
+            {selectedCountry !== "Sélectionnez votre pays de départ" && (
+              <button style={styles.button} onClick={() => handleEstimateCarbonFootprint(countryName, selectedCountry)}>
+                Calculer l'empreinte carbone
+              </button>
+            )}
+            <div>
+              {distance !== null && carbonFootprint !== null && (
+                <div>
+                  <p>Distance: {distance} km</p>
+                  <p>Empreinte carbone: {carbonFootprint} kgCO2e/km/personne</p>
+                </div>
+              )}
+            </div>
+            {carbonFootprint && (
+              <button style={styles.button} onClick={() => addTrajet(paysId, selectedCountryId, carbonFootprint)}>
+                Ajouter aux trajets sauvegardés
+              </button>
+            )}
           </div>
-          {carbonFootprint ? (
-            <button style={styles.button} onClick={() => addTrajet(paysId, selectedCountryId, carbonFootprint)}>
-              Ajouter aux trajets sauvegardés
-            </button>
-          ) : null}
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };  
 
 const styles = {
   container: {
@@ -578,6 +405,11 @@ const styles = {
     fontSize: '1.5rem',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  cardHeaderText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   cardBody: {
     padding: '1rem',
@@ -624,6 +456,39 @@ const styles = {
     border: '1px solid #cccccc',
     borderRadius: '5px',
     fontSize: '1rem',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    padding: 20,
+    background: '#fff',
+    borderRadius: 5,
+    display: 'flex',
+    flexDirection: 'column',
+    maxHeight: '80%',
+    overflowY: 'auto',
+  },
+  modalContent: {
+    // Style selon besoin
+  },
+  modalHeader: {
+    // Style selon besoin
+  },
+  closeButton: {
+    // Style selon besoin
+  },
+  modalBody: {
+    overflowY: 'auto',
   },
   dropdown: {
     width: '100%',

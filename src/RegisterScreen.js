@@ -8,8 +8,7 @@ const RegisterScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  const ip = "10.192.5.233";
-  const apiURL = `http://${ip}:8888/api`;
+  const apiURL = process.env.REACT_APP_API_URL;
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -34,7 +33,7 @@ const RegisterScreen = () => {
       console.log(data);
 
       if (response.status === 201) {
-        navigate('/login');
+        navigate(`/verify-mail-code`);
       } else {
         setErrorMessage(data.message || 'Erreur lors de l’inscription');
       }
