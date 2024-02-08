@@ -33,6 +33,7 @@ const RegisterScreen = () => {
       console.log(data);
 
       if (response.status === 201) {
+        alert('Succès! Un code vous a été envoyé pour vérifier votre adresse mail. Veuillez vérifier votre boite mail.');
         navigate(`/verify-mail-code`);
       } else {
         setErrorMessage(data.message || 'Erreur lors de l’inscription');

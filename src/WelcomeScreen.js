@@ -9,7 +9,7 @@ const WelcomeScreen = () => {
   const navigate = useNavigate();
 
   const handleRegister = () => {
-    navigate('/Register'); // Assurez-vous que ce chemin est correct
+    navigate('/register');
   };
 
 
@@ -21,9 +21,6 @@ const WelcomeScreen = () => {
         <h2 style={styles.jumbotronSubtitle}>Votre guide global pour le coût des soins de santé et le tourisme médical.</h2>
         <hr style={styles.separator} />
         <p style={styles.jumbotronText}>Explorez les coûts des soins de santé à l'échelle mondiale et prenez des décisions éclairées concernant votre santé.</p>
-        <button style={styles.jumbotronButton}>
-          En savoir plus
-        </button>
       </div>
 
       {/* Features */}

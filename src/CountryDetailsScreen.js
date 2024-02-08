@@ -44,6 +44,7 @@ const CountryDetails = () => {
       const formattedData = actesSante.map(item => ({
         id: item.id.toString(),
         service: item.nom,
+        description: item.description,
         prix: `${item.prix}€`
       }));
       setHealthCareServices(formattedData);
@@ -285,8 +286,8 @@ const CountryDetails = () => {
       getCountriesByName();
       (async () => {
         try {
-          setUserId = await getStoredUserId(); // Attendez que la promesse soit résolue
-          console.log(userId); // Maintenant, cela devrait correctement afficher la valeur de userId
+          setUserId = await getStoredUserId(); 
+          console.log(userId); 
         } catch (error) {
           console.error('Erreur lors de la récupération de l\'ID de l\'utilisateur:', error);
         }
@@ -302,7 +303,7 @@ const CountryDetails = () => {
           <div style={styles.cardBody}>
             {healthCareServices.map((service) => (
               <div key={service.id} style={styles.serviceCard}>
-                <p style={styles.serviceText}>{service.service} - {service.prix}</p>
+                <p style={styles.serviceText}>{service.service} - {service.description} - {service.prix}</p>
               </div>
             ))}
   
