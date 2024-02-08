@@ -1,70 +1,53 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Santé-App Interface](https://github.com/rayanejr/sante-app/blob/main/logo.png)
 
-## Available Scripts
+# À propos de Santé-App
 
-In the project directory, you can run:
+Santé-APP est une application web développée avec React, conçue pour améliorer l'accès aux informations de santé et aux services médicaux pour les utilisateurs. Elle offre une plateforme intuitive pour la gestion des soins de santé, y compris la consultation des actes médicaux disponibles dans différents pays, l'estimation de l'empreinte carbone pour les voyages médicaux, et bien plus encore.
 
-### `npm start`
+## Fonctionnalités Principales
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Consultation des Soins de Santé** : Parcourez une liste de services de soins de santé disponibles dans divers pays, avec des détails sur les prix et les recommandations.
+- **Estimation de l'Empreinte Carbone** : Calculez l'empreinte carbone de vos déplacements pour des soins médicaux à l'étranger.
+- **Gestion des Recommandations** : Accédez à des recommandations personnalisées pour votre voyage de soins de santé et gérez-les selon vos besoins.
+- **Réservation de Soins de Santé** : Réservez des services de soins de santé directement depuis l'application.
+- **Interface Administrateur** : Une interface dédiée pour les administrateurs pour gérer les contenus de l'application.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Technologies Utilisées
 
-### `npm test`
+- `react` : Bibliothèque pour la création d'interfaces utilisateur.
+- `@react-router-dom` : Pour la navigation dans l'application web.
+- `axios` : Pour les requêtes HTTP.
+- `leaflet` et `react-leaflet` : Pour intégrer des cartes dans une application web.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Prerequis
 
-### `npm run build`
+Avant de commencer, assurez-vous que votre ordinateur est connecté à Internet. Cela est nécessaire pour accéder aux API et aux ressources externes. Ensuite, récupérez l'adresse IPV4 de votre ordinateur si nécessaire pour les requêtes API en développement.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Pour trouver l'adresse IPV4 de votre ordinateur :
+- Sous Windows, ouvrez l'invite de commande et tapez `ipconfig`.
+- Sous MacOS, allez dans Préférences Système > Réseau, et sélectionnez votre connexion Wi-Fi.
+- Sous Linux, ouvrez le terminal et tapez `hostname -I`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Pour exécuter Santé-APP sur votre système local, suivez ces étapes :
 
-### `npm run eject`
+1. **Clonez le dépôt** :
+   ```bash
+   git clone https://github.com/votreUsername/sante-app.git
+   cd sante-app
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. **Installez les dépendances** :
+   ```bash
+   npm install
+   ```
+   ```bash
+   npm install @react-router-dom axios leaflet react-leaflet
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+3. **Lancez l'application** :
+   ```bash
+   npm start
+   ```
