@@ -78,7 +78,7 @@ const RegisterScreen = () => {
     },
     input: {
       width: '100%',
-      padding: '10px', // Réduire la taille du padding
+      padding: '10px', 
       border: '1px solid #ced4da',
       borderRadius: '10px',
       backgroundColor: '#f8f9fa',

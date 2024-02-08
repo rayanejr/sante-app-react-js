@@ -387,19 +387,19 @@ const styles = {
     alignItems: 'center',
     padding: '2rem',
     backgroundColor: '#f7f7f7',
-    minHeight: '100vh', // Assure que le container prend au moins toute la hauteur de la vue
+    minHeight: '100vh', 
   },
   card: {
     backgroundColor: '#ffffff',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     borderRadius: '10px',
-    maxWidth: '800px', // Taille maximale pour une lecture confortable
-    width: '100%', // S'adapte à la largeur de l'écran
+    maxWidth: '800px', 
+    width: '100%', 
     margin: '1rem',
     overflow: 'hidden',
   },
   cardHeader: {
-    backgroundColor: '#0056b3', // Bleu profond pour un contraste élevé avec le texte blanc
+    backgroundColor: '#0056b3', 
     color: '#ffffff',
     padding: '1rem',
     fontSize: '1.5rem',
@@ -415,13 +415,13 @@ const styles = {
     padding: '1rem',
   },
   serviceCard: {
-    borderBottom: '1px solid #eeeeee', // Ligne de séparation subtile
+    borderBottom: '1px solid #eeeeee', 
     paddingBottom: '0.5rem',
     marginBottom: '0.5rem',
   },
   serviceText: {
     fontSize: '1rem',
-    color: '#333333', // Couleur foncée pour une meilleure lisibilité
+    color: '#333333', 
   },
   subtitle: {
     fontWeight: 'bold',
@@ -430,7 +430,7 @@ const styles = {
     fontSize: '1.2rem',
   },
   button: {
-    backgroundColor: '#28a745', // Vert pour les actions positives
+    backgroundColor: '#28a745', 
     color: '#ffffff',
     padding: '10px 20px',
     border: 'none',
@@ -439,18 +439,18 @@ const styles = {
     margin: '0.5rem',
     fontSize: '1rem',
     transition: 'background-color 0.3s ease',
-    ':hover': { // Pseudo-classe hover pour un feedback visuel
+    ':hover': { 
       backgroundColor: '#218838',
     }
   },
   deleteButton: {
-    backgroundColor: '#dc3545', // Rouge pour les actions de suppression
+    backgroundColor: '#dc3545', 
     ':hover': {
       backgroundColor: '#c82333',
     }
   },
   input: {
-    width: '100%', // Utilise toute la largeur disponible pour une entrée facile
+    width: '100%', 
     padding: '10px',
     marginBottom: '1rem',
     border: '1px solid #cccccc',
@@ -479,13 +479,20 @@ const styles = {
     overflowY: 'auto',
   },
   modalContent: {
-    // Style selon besoin
+    padding: '20px',
   },
   modalHeader: {
-    // Style selon besoin
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
   },
   closeButton: {
-    // Style selon besoin
+    cursor: 'pointer',
+    border: 'none',
+    background: 'transparent',
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   modalBody: {
     overflowY: 'auto',
