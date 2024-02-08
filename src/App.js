@@ -145,7 +145,7 @@ function App() {
         <Route path="/login" element={<LayoutUnauthenticatedHeader><LoginScreen /></LayoutUnauthenticatedHeader>} />
         <Route path="/user-dashboard" element={<LayoutUserHeader><UserDashboardScreen /></LayoutUserHeader>} />
         <Route path="/admin-dashboard" element={<LayoutAdminHeader><AdminDashboardScreen /></LayoutAdminHeader>} />
-        <Route path="/verify-mail-code" element={<LayoutUnauthenticatedHeader><VerifyMailCodeScreen /></LayoutUnauthenticatedHeader>} />
+        <Route path="/verify-mail-code/:email" element={<LayoutUnauthenticatedHeader><VerifyMailCodeScreen /></LayoutUnauthenticatedHeader>} />
         <Route path="/verify-reset-code" element={<LayoutUnauthenticatedHeader><VerifyResetCodeScreen /></LayoutUnauthenticatedHeader>} />
         <Route path="/confirm-password" element={<LayoutUnauthenticatedHeader><ConfirmPasswordScreen /></LayoutUnauthenticatedHeader>} />
         <Route path="/forgot-password" element={<LayoutUnauthenticatedHeader><ForgotPasswordScreen /></LayoutUnauthenticatedHeader>} />

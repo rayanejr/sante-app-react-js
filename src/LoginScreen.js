@@ -38,7 +38,7 @@ const LoginScreen = () => {
             navigate('/user-dashboard'); // Navigation vers le tableau de bord utilisateur
           } else {
             alert("Vous n'avez pas encore validé votre compte! Vous allez être redirigé vers la page de vérification.");
-            navigate(`/verify-mail-code`); // Navigation vers la page de vérification
+            navigate(`/verify-mail-code/${email}`); // Navigation vers la page de vérification
           }
         }
       } else {

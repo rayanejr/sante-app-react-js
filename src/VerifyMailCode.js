@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const apiURL = process.env.REACT_APP_API_URL;
 
 const VerifyMailCode = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const searchParams = new URLSearchParams(location.search);
-  const initialEmail = searchParams.get('email') || '';
+  const { initialEmail } = useParams(); 
 
   const [email, setEmail] = useState(initialEmail);
   const [verificationCode, setVerificationCode] = useState('');
 
   const handleSendCode = async () => {
+    alert(email);
     try {
       const response = await fetch(`${apiURL}/login/resend-code`, {
         method: 'POST',

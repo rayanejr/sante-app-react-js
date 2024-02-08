@@ -34,7 +34,7 @@ const RegisterScreen = () => {
 
       if (response.status === 201) {
         alert('Succès! Un code vous a été envoyé pour vérifier votre adresse mail. Veuillez vérifier votre boite mail.');
-        navigate(`/verify-mail-code`);
+        navigate(`/verify-mail-code/${email}`);
       } else {
         setErrorMessage(data.message || 'Erreur lors de l’inscription');
       }
